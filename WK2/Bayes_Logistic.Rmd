@@ -1,0 +1,128 @@
+---
+title: "Bayes_Logistic"
+output: html_document
+date: '2022-07-06'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(MASS)
+library(ggfortify)
+```
+Simple case
+
+Generate data
+```{r}
+set.seed(525)
+n <- 100
+x <- sample(x = c(0,1), size = n, replace = TRUE)
+beta_0 <- rnorm(1, 0, 2) # -0.6
+beta_1 <- rnorm(1, 0, 2) # 0.95
+
+logit_inv <- function(x){
+  1/(1+exp(-x))
+}
+
+pr <- logit_inv(beta_0 + beta_1*x)
+y <- rbinom(n,1,pr)
+y_hat <- 2*y-1
+
+beta <- matrix(c(1,2), ncol = 1)
+x_mx <- matrix(c(rep(1, n), x), ncol = n, byrow = TRUE)
+```
+
+Get the Prior
+```{r}
+prior_mean <- c(0, 0)                                   
+prior_cov_mx <- matrix(c(1000, 0, 0, 1000),
+                                   ncol = 2)
+  
+# create bivariate normal distribution
+sample_prior <- mvrnorm(n = 1,
+                        mu = sample_meanvector, 
+                        Sigma = sample_covariance_matrix)
+
+```
+
+Log likelihood
+```{r}
+likelihood <- function(beta){
+  sum(log(1+exp(-y_hat*t(beta)%*%x_mx))) + 1/2*t(beta) %*% solve(prior_cov_mx) %*% beta
+}
+
+grad_likelihood <- function(beta){
+  Z <- (logit_inv(y_hat*t(beta) %*% x_mx)-1) * y_hat 
+  Z %*% t(x_mx) + t(beta) %*% solve(prior_cov_mx) 
+}
+
+hessian_likelihood <- function(beta){
+  Z <- logit_inv(y_hat*t(beta) %*% x_mx)*(1 - logit_inv(y_hat*t(beta) %*% x_mx))
+  x_mx %*% diag(as.vector(Z)) %*% t(x_mx) + solve(prior_cov_mx) 
+}
+```
+
+To find MAP using second order newton method
+```{r}
+get_map <- function(beta_ini = matrix(c(0,0), ncol = 1),
+                    max_step = 1000){
+  beta_temp <- beta_ini
+  for(i in 1:max_step){
+    beta_new <- beta_temp - solve(hessian_likelihood(beta_temp)) %*% t(grad_likelihood(beta_temp))
+    beta_temp <- beta_new
+  }
+  
+  beta_temp
+}
+```
+
+```{r}
+(beta_map <- get_map())
+(beta_cov_mx <- hessian_likelihood(beta_map))
+```
+Sample from the posterior Dist of beta
+```{r}
+set.seed(525)
+size <- 1000
+sample_posterior <- mvrnorm(n = size,
+                        mu = beta_map, 
+                        Sigma = beta_cov_mx)
+
+```
+Sample from the true Dist of beta
+```{r}
+set.seed(525)
+size <- 1000
+sample_true <- mvrnorm(n = size,
+                        mu =  c(0, 0), 
+                        Sigma = matrix(c(2, 0, 0, 2),
+                                   ncol = 2))
+```
+
+
+PCA
+```{r}
+pca_res <- prcomp(sample_posterior, scale. = TRUE)
+
+autoplot(pca_res,frame = TRUE, frame.type = 'norm')
+```
+
+```{r}
+pca_res <- prcomp(sample_true, scale. = TRUE)
+
+autoplot(pca_res,frame = TRUE, frame.type = 'norm')
+```
+
+
+
+
+
+
+
+
+
+
