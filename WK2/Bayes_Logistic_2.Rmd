@@ -1,0 +1,152 @@
+---
+title: "Bayes_Logistic_2"
+output: html_document
+date: '2022-07-06'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(MASS)
+library(ggfortify)
+library(cluster)
+```
+Simple case
+
+Generate data
+```{r}
+set.seed(514)
+n <- 1000
+dim <- 5
+
+x <- mvrnorm(n = n,
+             mu = runif(dim-1, -1, 3),
+             Sigma = diag(runif(dim-1, 1, 2)))
+
+x_mx <- matrix(c(rep(1, n), x), ncol = n, byrow = TRUE)
+
+# create beta true
+beta_true <- mvrnorm(n = 1,
+                     mu = runif(dim, -2, 3),
+                     Sigma = diag(rep(2, dim)))
+
+
+logit_inv <- function(x){
+  1/(1+exp(-x))
+}
+
+
+pr <- logit_inv(beta_true %*% x_mx)
+y <- rbinom(n,1,pr)
+y_hat <- 2*y-1
+
+hist(y)
+```
+
+```{r}
+# To find M
+# the Hessian
+H <- x_mx[1,] %*% t(x_mx[1,])
+for(i in 2:dim){
+H <- H + x_mx[i,] %*% t(x_mx[i,])
+}
+leading_eigen_val <- eigen(H)$values[1]
+# set M
+M <- leading_eigen_val 
+```
+
+Get the Prior
+```{r}
+prior_mean <- rep(0, dim)                                  
+prior_cov_mx <- diag(rep(100, dim))
+  
+# create bivariate normal distribution
+sample_prior <- mvrnorm(n = 1,
+                        mu = prior_mean, 
+                        Sigma = prior_cov_mx)
+
+```
+
+Log likelihood
+```{r}
+likelihood <- function(beta){
+  (sum(log(1+exp(-y_hat*t(beta)%*%x_mx))) + 1/2*t(beta) %*% solve(prior_cov_mx) %*% beta)
+}
+
+grad_likelihood <- function(beta){
+  Z <- (logit_inv(y_hat*t(beta) %*% x_mx)-1) * y_hat 
+  (Z %*% t(x_mx) + t(beta) %*% solve(prior_cov_mx) )
+}
+
+hessian_likelihood <- function(beta){
+  Z <- logit_inv(y_hat*t(beta) %*% x_mx)*(1 - logit_inv(y_hat*t(beta) %*% x_mx))
+  (x_mx %*% diag(as.vector(Z)) %*% t(x_mx) + solve(prior_cov_mx) )
+}
+```
+
+
+
+To find MAP
+```{r}
+get_map <- function(beta_ini = sample_prior,
+                    max_step = 1000){
+  beta_temp <- beta_ini
+  for(i in 1:max_step){
+    beta_new <- beta_temp - 1/M * t(grad_likelihood(beta_temp))
+    beta_temp <- beta_new
+    
+    if(grad_likelihood(beta_true) %*% t(grad_likelihood(beta_true)) < 1e-5){
+      break
+    }
+  }
+  
+  beta_temp
+}
+```
+
+```{r}
+likelihood(beta_map)
+likelihood(beta_true)
+```
+
+```{r}
+(beta_map <- get_map())
+(beta_cov_mx <- solve(hessian_likelihood(beta_map)))
+```
+Sample from the posterior Dist of beta
+```{r}
+set.seed(525)
+size <- 10000
+sample_posterior <- mvrnorm(n = size,
+                        mu = beta_map, 
+                        Sigma = beta_cov_mx)
+
+```
+
+PCA
+```{r}
+pca_res <- prcomp(sample_posterior, scale. = TRUE)
+
+autoplot(pca_res,frame = TRUE, frame.type = 'norm')
+```
+```{r}
+pca <- prcomp(sample_posterior, scale. = TRUE)
+
+axes <- predict(pca, newdata = sample_posterior)
+pc1 <- axes[,1]
+pc2 <- axes[,2]
+
+data <- as.data.frame(cbind(pc1, pc2))
+
+# Area + contour
+ggplot(data, aes(x=pc1, y=pc2) ) +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon", colour="white")
+
+```
+
+
+
