@@ -363,8 +363,8 @@ set.seed(525)
 rho_finite_element_dim1 <- density(rho_0[,1])
 rho_finite_element_dim2 <- density(rho_0[,2])
 
-delta_dim1 <- rho_finite_element_dim1$y/10
-delta_dim2 <- rho_finite_element_dim2$y/10
+delta_dim1 <- max(rho_finite_element_dim1$y)/10
+delta_dim2 <- max(rho_finite_element_dim2$y)/10
 
 B <- 100
 
@@ -402,6 +402,7 @@ for(i in 1:B){
   
   Loss_gradient_dim1_mx[,i] <- Loss_gradient_dim1
   Loss_gradient_dim2_mx[,i] <- Loss_gradient_dim2
+  cat(paste("finish", i, "\n"))
 }
 
 ```
