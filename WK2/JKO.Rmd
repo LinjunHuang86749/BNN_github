@@ -1,0 +1,449 @@
+---
+title: "JKO"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(MASS)
+library(ggfortify)
+library(cluster)
+```
+
+```{r}
+library(transport)
+library(MEPDF)
+library(fishmethods)
+library(FNN)
+```
+
+```{r}
+library(tidyverse)
+```
+
+Simple case
+
+Generate data
+```{r}
+set.seed(525)
+n <- 100
+x <- sample(x = c(0,1), size = n, replace = TRUE)
+x_mx <- matrix(c(rep(1, n), x), ncol = n, byrow = TRUE)
+# Get the true beta
+mean <- c(0, 0)                                   
+cov_mx <- matrix(c(2, 0, 0, 2),
+                                   ncol = 2)
+  
+# create bivariate normal distribution
+beta_true <- mvrnorm(n = n,
+                        mu = mean, 
+                        Sigma = cov_mx)
+
+# beta_0 <- rnorm(1, 0, 2) # -0.6
+# beta_1 <- rnorm(1, 0, 2) # 0.95
+
+logit_inv <- function(x){
+  1/(1+exp(-x))
+}
+
+
+pr <- logit_inv(diag(beta_true %*% x_mx))
+y <- rbinom(n,1,pr)
+y_hat <- 2*y-1
+
+```
+
+Get the Prior
+```{r}
+prior_mean <- c(0, 0)                                   
+prior_cov_mx <- matrix(c(100, 0, 0, 100),
+                                   ncol = 2)
+  
+# create bivariate normal distribution
+sample_prior <- mvrnorm(n = 1,
+                        mu = prior_mean, 
+                        Sigma = prior_cov_mx)
+
+```
+
+Log likelihood
+```{r}
+likelihood <- function(beta){
+  sum(log(1+exp(-y_hat*t(beta)%*%x_mx))) + 1/2*t(beta) %*% solve(prior_cov_mx) %*% beta
+}
+
+grad_likelihood <- function(beta){
+  Z <- (logit_inv(y_hat*t(beta) %*% x_mx)-1) * y_hat 
+  Z %*% t(x_mx) + t(beta) %*% solve(prior_cov_mx) 
+}
+
+hessian_likelihood <- function(beta){
+  Z <- logit_inv(y_hat*t(beta) %*% x_mx)*(1 - logit_inv(y_hat*t(beta) %*% x_mx))
+  x_mx %*% diag(as.vector(Z)) %*% t(x_mx) + solve(prior_cov_mx) 
+}
+```
+
+
+$$
+F(\rho) = D_{KL}(\rho \| P(\beta)) - E_{\rho}[\log P(D|\beta)]
+$$
+
+Let $\rho_0 \sim N(\mu,\Sigma)$
+```{r}
+rho_0_mean <- c(0, 0)                                   
+rho_0_cov_mx <- matrix(c(1000, 0, 0, 1000),
+                       ncol = 2)
+
+rho_0  <- mvrnorm(n = 1,
+                  mu = rho_0_mean,
+                  Sigma = rho_0_cov_mx)
+
+```
+
+First term
+```{r}
+set.seed(525)
+
+num_sample <- 1000
+sample_prior <- mvrnorm(n = num_sample,
+                        mu = prior_mean, 
+                        Sigma = prior_cov_mx)
+
+rho_0  <- mvrnorm(n = num_sample,
+                  mu = rho_0_mean,
+                  Sigma = rho_0_cov_mx)
+
+mean(KL.divergence(sample_prior, rho_0))
+```
+
+second term
+```{r}
+apply(rho_0,1,likelihood) %>% mean()
+```
+
+get $F(\rho)$,
+
+```{r}
+get_F <- function(rho, num_sample = 1000, seed = 525){
+  
+  set.seed(seed)
+  
+  sample_prior <- mvrnorm(n = num_sample,
+                          mu = prior_mean, 
+                          Sigma = prior_cov_mx)
+  
+  
+  first_term <- mean(KL.divergence(sample_prior, rho))
+  second_term <- apply(rho,1,likelihood) %>% mean()
+  F_val <- first_term - second_term
+  F_val
+}
+
+```
+
+```{r}
+set.seed(525)
+
+rho_0_mean <- c(0, 0)                                   
+rho_0_cov_mx <- matrix(c(1000, 0, 0, 1000),
+                       ncol = 2)
+
+rho_0  <- mvrnorm(n = num_sample,
+                  mu = rho_0_mean,
+                  Sigma = rho_0_cov_mx)
+
+get_F(rho_0)
+```
+
+Generate samples from empirical distribution
+```{r}
+plot(density(rho_0[,1]))
+plot(density(rho_0[,2]))
+```
+
+Method 1
+```{r}
+get_emp_pdf <- function(x.in, density){
+  x.list <- density$x
+  y.list <- density$y
+
+  index_list <- c(1:length(x.list))
+
+  index.in <- max(index_list[x.in > x.list ])
+  y.in <- y.list[index.in]
+  y.in
+}
+
+M <- max(density( rho_0[,1])$y )
+x_min <- min(density( rho_0[,1])$x )
+x_max <- max(density( rho_0[,1])$x )
+
+df2 <- tibble(y = runif(5e2, x_min, x_max), u = runif(5e2, 0, 1),
+             loglik_ratio = map_dbl(y, ~get_emp_pdf(.x, density(rho_0[,1]) )) / M,
+             selected = u < loglik_ratio)
+```
+
+```{r}
+f <- function(x) dnorm(x, mean = 0, sd = sqrt(1000))
+
+ggplot(tibble(x = seq(0, 1, 1e-2)), aes(x = x)) +
+  stat_function(fun = f) +
+  stat_function(fun = function(x) 1/M * dunif(x)) +
+  geom_point(aes(x = y, y = M * u, color = selected), data = df2) +
+  ylab("Density") + ylim(c(0, 0.013))
+```
+
+```{r}
+df_selected <- df2 %>%
+filter(selected)
+# Proportion of selected samples?
+NROW(df_selected) / NROW(df2)
+NROW(df_selected)
+```
+
+```{r}
+get_emp_pdf <- function(x.in, density){
+  x.list <- density$x
+  y.list <- density$y
+
+  index_list <- c(1:length(x.list))
+
+  index.in <- max(index_list[x.in > x.list ])
+  y.in <- y.list[index.in]
+  y.in
+}
+```
+
+```{r}
+density <- density( rho_0[,1])
+total_generated <- 5000
+sample_needed <- 1000
+  
+M <- max(density$y )
+x_min <- min(density$x )
+x_max <- max(density$x )
+
+df2 <- tibble(y = runif(total_generated, x_min, x_max), u = runif(total_generated, 0, 1),
+             loglik_ratio = map_dbl(y, ~get_emp_pdf(.x, density )) / M,
+             selected = u < loglik_ratio)
+
+df2_selected <- df2 %>%
+  filter(selected)
+
+selected_samples <- df2_selected$y
+output <- sample(selected_samples, sample_needed)
+plot(density(output))
+```
+```{r}
+generate_samples <- function(density, 
+                             total_generated = 6000,
+                             sample_needed = 1000,
+                             seed = 525){
+  set.seed(seed)
+  M <- max(density$y )
+  x_min <- min(density$x )
+  x_max <- max(density$x )
+  
+  df2 <- tibble(y = runif(total_generated, x_min, x_max), u = runif(total_generated, 0, 1),
+               loglik_ratio = map_dbl(y, ~get_emp_pdf(.x, density )) / M,
+               selected = u < loglik_ratio)
+  
+  df2_selected <- df2 %>%
+    filter(selected)
+  
+  selected_samples <- df2_selected$y
+  output <- sample(selected_samples, sample_needed)
+  output
+}
+```
+
+```{r}
+samples <- generate_samples(density = density( rho_0[,1]))
+plot(density(samples))
+```
+
+zeroth order gradient estimator
+using simultaneous perturbation (Spall (1992))
+To estimate $\nabla f(x)$, a sample output would involve first simulating a random vector, say $h = \{ h_1,...,h_p\} \in \{ -1, 1 \}$, then generating two unbiased simulation runs $\hat f (x + \delta h)$ and $\hat f(x - \delta h )$, and finally outputting, for each direction i,
+$$
+\frac{\hat f (x + \delta h) - \hat f (x - \delta h)}{2 \delta h_i},
+$$
+where $\delta > 0$ is the perturbation size.
+
+
+Let 
+$$
+Loss(\rho) = F(\rho) + \frac{1}{2 \tau} W_2^2 (\rho, \rho^\tau_t).
+$$
+And the $\rho$ that minimize $Loss(\rho)$ is the $\rho^\tau_{t+1}$.
+
+Loss function
+
+```{r}
+set.seed(525)
+
+rho_0_mean <- c(0, 0)                                   
+rho_0_cov_mx <- matrix(c(1000, 0, 0, 1000),
+                       ncol = 2)
+
+rho_0  <- mvrnorm(n = num_sample,
+                  mu = rho_0_mean,
+                  Sigma = rho_0_cov_mx)
+```
+
+
+```{r}
+rho_finite_element_dim1 <- density(rho_0[,1])
+rho_finite_element_dim2 <- density(rho_0[,2])
+tau <- 1/60
+rho_prev <- rho_0
+
+sample_rho_d1 <- generate_samples(density = rho_finite_element_dim1)
+sample_rho_d2 <- generate_samples(density = rho_finite_element_dim2)
+sample_rho <- cbind(sample_rho_d1, sample_rho_d2)
+
+
+# Get F value
+F_val <- get_F(sample_rho)
+
+# Get W^2_2
+rho_current <- pp(sample_rho)
+rho_prev <- pp(rho_prev)
+W2 <- wasserstein(rho_current,rho_prev,p=2)^2
+
+loss <- F_val + 1/(2*tau)*W2
+```
+
+```{r}
+get_loss <- function(rho_finite_element_dim1,
+                     rho_finite_element_dim2,
+                     rho_prev, tau = 1/60){
+  
+  sample_rho_d1 <- generate_samples(density = rho_finite_element_dim1)
+  sample_rho_d2 <- generate_samples(density = rho_finite_element_dim2)
+  sample_rho <- cbind(sample_rho_d1, sample_rho_d2)
+  
+  
+  # Get F value
+  F_val <- get_F(sample_rho)
+  
+  # Get W^2_2
+  rho_current <- pp(sample_rho)
+  rho_prev <- pp(rho_prev)
+  W2 <- wasserstein(rho_current,rho_prev,p=2)^2
+  
+  loss <- F_val + 1/(2*tau)*W2
+  loss
+}
+
+```
+
+```{r}
+rho_finite_element_dim1 <- density(rho_0[,1])
+rho_finite_element_dim2 <- density(rho_0[,2])
+
+get_loss(rho_finite_element_dim1,
+         rho_finite_element_dim2,
+         rho_prev = rho_0)
+```
+
+```{r}
+
+```
+
+
+```{r}
+set.seed(525)
+
+rho_finite_element_dim1 <- density(rho_0[,1])
+rho_finite_element_dim2 <- density(rho_0[,2])
+
+delta_dim1 <- rho_finite_element_dim1$y/10
+delta_dim2 <- rho_finite_element_dim2$y/10
+
+B <- 100
+
+Loss_gradient_dim1_mx <- matrix(0, ncol = B,
+                                nrow = length(rho_finite_element_dim1$y))
+Loss_gradient_dim2_mx <- matrix(0, ncol = B,
+                                nrow = length(rho_finite_element_dim1$y))
+
+for(i in 1:B){
+  h_dim1 <- sample(x = c(-1,1), size = length(rho_finite_element_dim1$y), replace = TRUE)
+  h_dim2 <- sample(x = c(-1,1), size = length(rho_finite_element_dim2$y), replace = TRUE)
+  
+  
+  rho_fe_dim1_plus <- rho_finite_element_dim1
+  rho_fe_dim2_plus <- rho_finite_element_dim2
+  
+  rho_fe_dim1_plus$y <- rho_finite_element_dim1$y + delta_dim1*h_dim1
+  rho_fe_dim2_plus$y <- rho_finite_element_dim2$y + delta_dim2*h_dim2
+  
+  rho_fe_dim1_minus <- rho_finite_element_dim1
+  rho_fe_dim2_minus <- rho_finite_element_dim2
+  
+  rho_fe_dim1_minus$y <- rho_finite_element_dim1$y - delta_dim1*h_dim1
+  rho_fe_dim2_minus$y <- rho_finite_element_dim2$y - delta_dim2*h_dim2
+  
+  Loss_plus <- get_loss(rho_fe_dim1_plus,
+                        rho_fe_dim2_plus,
+                        rho_prev = rho_0)
+  
+  Loss_minus <- get_loss(rho_fe_dim1_minus,
+                        rho_fe_dim2_minus,
+                        rho_prev = rho_0)
+  Loss_gradient_dim1 <- (Loss_plus - Loss_minus)/(2*delta_dim1*h_dim1)
+  Loss_gradient_dim2 <- (Loss_plus - Loss_minus)/(2*delta_dim2*h_dim2)
+  
+  Loss_gradient_dim1_mx[,i] <- Loss_gradient_dim1
+  Loss_gradient_dim2_mx[,i] <- Loss_gradient_dim2
+}
+
+```
+
+```{r}
+Loss_gradient_dim1_mean <- rowMeans(Loss_gradient_dim1_mx)
+
+Loss_gradient_dim1_mean_sub <- ifelse(abs(Loss_gradient_dim1_mean) < 1e5, 
+                                      Loss_gradient_dim1_mean,
+                                      sign(Loss_gradient_dim1_mean)*1e5)
+```
+
+```{r}
+hist(Loss_gradient_dim1_mean_sub)
+```
+
+```{r}
+rho_fe_dim1_update <- rho_finite_element_dim1
+rho_fe_dim1_update$y <- rho_finite_element_dim1$y - 1/(1e6)*Loss_gradient_dim1_mean_sub
+
+plot(rho_fe_dim1_update)
+```
+
+```{r}
+rho_fe_dim1_update <- rho_finite_element_dim1
+rho_fe_dim1_update$y <- rho_finite_element_dim1$y - 1/(1e6)*Loss_gradient_dim1_mean
+
+plot(y=abs(rho_fe_dim1_update$y[100:400]),x = rho_fe_dim1_update$x[100:400])
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

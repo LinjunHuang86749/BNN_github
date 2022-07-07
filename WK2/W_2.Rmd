@@ -16,6 +16,7 @@ library(ggfortify)
 library(transport)
 library(MEPDF)
 library(fishmethods)
+library(FNN)
 ```
 
 ```{r}
@@ -207,7 +208,15 @@ ggplot(tibble(x = seq(0, 1, 1e-2)), aes(x = x)) +
   ylab("Density") + ylim(c(0, 3))
 ```
 
+```{r}
+set.seed(1000)
+X<- rexp(10000, rate=0.2)
+Y<- rexp(10000, rate=0.4)
 
+KL.divergence(X, Y, k=10)
+#theoretical divergence = log(0.2/0.4)+(0.4-0.2)-1 = 1-log(2) = 0.307
+mean(KL.divergence(X, Y))
+```
 
 
 
