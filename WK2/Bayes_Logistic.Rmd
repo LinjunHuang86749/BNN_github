@@ -263,5 +263,3 @@ ggplot(data, aes(x=pc1, y=pc2) ) +
 ```
 
 
-
-

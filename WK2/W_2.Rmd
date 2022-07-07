@@ -1,0 +1,236 @@
+---
+title: "W_2"
+output: html_document
+date: '2022-07-07'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(MASS)
+library(ggfortify)
+library(transport)
+library(MEPDF)
+library(fishmethods)
+```
+
+```{r}
+set.seed(27)
+x <- pp(matrix(runif(500),250,2))
+y <- pp(matrix(runif(500),250,2))
+wasserstein(x,y,p=1)
+wasserstein(x,y,p=2)
+```
+
+```{r}
+plot(x)
+plot(y)
+```
+
+W1
+```{r}
+set.seed(527)
+x <- rnorm(2000)
+y <- rnorm(1500,2)
+wasserstein1d(x,y)
+```
+
+W2
+```{r}
+# Get the true beta
+mean <- c(3, 5)                                   
+cov_mx <- matrix(c(2, 0, 0, 2),
+                                   ncol = 2)
+  
+# create bivariate normal distribution
+beta_true <- mvrnorm(n = 2000,
+                        mu = mean, 
+                        Sigma = cov_mx)
+
+# some prior
+prior_mean <- c(0, 0)                                   
+prior_cov_mx <- matrix(c(1000, 0, 0, 1000),
+                                   ncol = 2)
+  
+# create bivariate normal distribution
+sample_prior <- mvrnorm(n = 2000,
+                        mu = prior_mean, 
+                        Sigma = prior_cov_mx)
+
+```
+
+```{r}
+x1 <- pp(sample_prior)
+y1 <- pp(beta_true)
+wasserstein(x1,y1,p=2)
+```
+
+```{r}
+A <- c(0, 0.3, 0.31, 0.33, 0.37, 0.49, 0.51, 0.53, 0.59, 0.6)
+e <- ecdf(A)
+plot.ecdf(A, main="ECDF of sample")
+```
+```{r}
+remp(10, A)
+```
+```{r}
+set.seed(525)
+plot.ecdf(remp(1000, A), main="ECDF of sample")
+```
+
+```{r}
+library("pracma")
+library("plyr")
+
+a<-list(c(-1,-1),c(1,1),c(0.01,0.01))
+b<-list(c(-2,-2),c(2,2),c(0.02,0.02))
+cubes<-list(a,b)
+
+min.corner = c(-4,-4)
+max.corner= c(4,4)
+main.gridsize = c(0.05,0.05)
+
+# Data & Density
+data<-mvrnorm(1000, mu = c(0, 0), Sigma = diag(2))
+
+pdf<-epdf(data,max.corner,min.corner,main.gridsize,rescubes = cubes)
+
+
+```
+
+```{r}
+a <- list(mn = c(-1, -1),
+          mx = c(1, 1),
+          grid.size = c(0.05, 0.05))
+
+b <- list(mn = c(-2, -2),
+          mx = c(2, 2),
+          grid.size = c(0.1, 0.1))
+
+cubes <- list(a, b)
+
+pdf <- epdf(data = data,
+            max.corner = c(4, 4),
+            min.corner = c(-4, -4),
+            main.gridsize = c(0.2, 0.2),
+            rescubes = cubes)
+
+```
+```{r}
+x <- rnorm(1000)
+y <- 2 + x*rnorm(1000,1,.1) + rnorm(1000)
+library(MASS)
+den3d <- kde2d(x, y)
+
+# the new part:
+library(plotly)
+plot_ly(x=den3d$x, y=den3d$y, z=den3d$z) %>% add_surface()
+```
+
+
+```{r}
+set.seed(13531)                                     # Create random numeric data
+x <- rnorm(1000)
+plot(density(x)) 
+```
+Sampling from a given Dist
+```{r}
+library(tidyverse)
+f <- function(x) dbeta(x, shape1 = 3, shape2 = 6)
+ggplot(tibble(x = seq(0, 1, 1e-2)), aes(x = x)) +
+  stat_function(fun = f) +
+  ylab("Density") +
+  ylim(c(0, 3))
+
+```
+```{r}
+M <- 2.6
+ggplot(tibble(x = seq(0, 1, 1e-2)), aes(x = x)) +
+stat_function(fun = f) +
+stat_function(fun = function(x) M * dunif(x)) +
+ylab("Density") +
+ylim(c(0, 3))
+
+```
+
+```{r}
+df <- tibble(y = runif(5e2, 0, 1), u = runif(5e2, 0, 1),
+             loglik_ratio = dbeta(y, 3, 6) / M,
+             selected = u < loglik_ratio)
+
+ggplot(tibble(x = seq(0, 1, 1e-2)), aes(x = x)) +
+  stat_function(fun = f) +
+  stat_function(fun = function(x) 2.6 * dunif(x)) +
+  geom_point(aes(x = y, y = M * u, color = selected), data = df) +
+  ylab("Density") + ylim(c(0, 3))
+
+```
+
+```{r}
+df_selected <- df %>%
+filter(selected)
+# Proportion of selected samples?
+NROW(df_selected) / NROW(df)
+#> [1] 0.428
+```
+```{r}
+plot(density(df_selected$y))
+```
+
+```{r}
+get_emp_pdf <- function(x.in){
+  x.list <- density(df_selected$y)$x
+  y.list <- density(df_selected$y)$y
+
+  index_list <- c(1:length(x.list))
+
+  index.in <- max(index_list[x.in > x.list ])
+  y.in <- y.list[index.in]
+  y.in
+}
+```
+
+```{r}
+M <- 2.6
+df2 <- tibble(y = runif(5e2, 0, 1), u = runif(5e2, 0, 1),
+             loglik_ratio = map_dbl(y, ~get_emp_pdf(.x)) / M,
+             selected = u < loglik_ratio)
+
+ggplot(tibble(x = seq(0, 1, 1e-2)), aes(x = x)) +
+  stat_function(fun = f) +
+  stat_function(fun = function(x) 2.6 * dunif(x)) +
+  geom_point(aes(x = y, y = M * u, color = selected), data = df2) +
+  ylab("Density") + ylim(c(0, 3))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -113,6 +113,8 @@ likelihood(beta_map)
 likelihood(beta_true)
 ```
 
+
+
 ```{r}
 (beta_map <- get_map())
 (beta_cov_mx <- solve(hessian_likelihood(beta_map)))
@@ -147,6 +149,12 @@ ggplot(data, aes(x=pc1, y=pc2) ) +
   stat_density_2d(aes(fill = ..level..), geom = "polygon", colour="white")
 
 ```
+
+
+
+
+
+
 
 
 
