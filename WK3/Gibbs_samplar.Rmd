@@ -126,6 +126,8 @@ probitll=function(beta,y,X){
 }
 ```
 
+
+Probit Metropolis–Hastings Sampler
 ```{r, warning=FALSE, message=FALSE}
 library(lgarch)
 
@@ -185,6 +187,7 @@ logitll=function(beta,y,X){
 }
 ```
 
+Logit Metropolis–Hastings Sampler
 ```{r, warning=FALSE, message=FALSE}
 library(mgcv)
 
