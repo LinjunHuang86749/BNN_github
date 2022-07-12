@@ -110,6 +110,128 @@ hist(f$beta)
 ```
 
 
+```{r}
+
+probitll=function(beta,y,X){
+  # probit likelihood
+  if (is.matrix(beta)==F) beta=as.matrix(t(beta))
+  n=dim(beta)[1]
+  pll=rep(0,n)
+  for (i in 1:n){
+    lF1=pnorm(X%*%beta[i,],log=T)
+    lF2=pnorm(-X%*%beta[i,],log=T)
+    pll[i]=sum(y*lF1+(1-y)*lF2)
+  }
+  pll
+}
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(lgarch)
+
+hmflatprobit=function(niter,y,X,scale){
+  p=dim(X)[2]
+  mod=summary(glm(y~-1+X,family=binomial(link="probit")))
+  beta=matrix(0,niter,p)
+  beta[1,]=as.vector(mod$coeff[,1])
+  Sigma2=as.matrix(mod$cov.unscaled)
+
+  for (i in 2:niter){
+    tildebeta=rmnorm(1,beta[i-1,],scale*Sigma2)
+    llr=probitll(tildebeta,y,X)-probitll(beta[i-1,],y,X)
+    if (runif(1)<=exp(llr)) beta[i,]=tildebeta
+    else beta[i,]=beta[i-1,]
+  }
+  beta
+}
+```
+
+Generate data
+```{r}
+set.seed(523)
+n <- 100
+beta_true <- matrix(c(-3, 5), ncol = 1)
+x1 <- rnorm(n, 5,4)
+x <- matrix(0, nrow = n, ncol = 2)
+x[,1] <- rep(1, n)
+x[,2] <- x1
+
+
+logit_inv <- function(x){
+  1/(1+exp(-x))
+}
+
+
+pr <- logit_inv(x %*% beta_true)
+y <- rbinom(n,1,pr)
+y_hat <- 2*y-1
+```
+
+```{r}
+hist(y)
+```
+
+```{r}
+logitll=function(beta,y,X){
+  if (is.matrix(beta)==F) beta=as.matrix(t(beta))
+  n=dim(beta)[1]
+  pll=rep(0,n)
+  for (i in 1:n){
+    lF1=plogis(X%*%beta[i,],log=T)
+    lF2=plogis(-X%*%beta[i,],log=T)
+    pll[i]=sum(y*lF1+(1-y)*lF2)
+  }
+  pll
+}
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(mgcv)
+
+hmflatlogit=function(niter,y,X,scale){
+  p=dim(X)[2]
+  mod=summary(glm(y~-1+X,family=binomial(link="logit")))
+  beta=matrix(0,niter,p)
+  beta[1,]=as.vector(mod$coeff[,1])
+  Sigma2=as.matrix(mod$cov.unscaled)
+  for (i in 2:niter){
+    tildebeta=rmvn(1,beta[i-1,],scale*Sigma2)
+    llr=logitll(tildebeta,y,X)-logitll(beta[i-1,],y,X)
+    if (runif(1)<=exp(llr)) beta[i,]=tildebeta
+    else beta[i,]=beta[i-1,]
+  }
+  beta
+}
+```
+
+```{r, warning=FALSE, message=FALSE}
+beta_result1 <- hmflatlogit(niter = 1000,y=y,X=x, scale = 1)
+```
+
+```{r}
+hist(beta_result1[,1])
+```
+```{r}
+hist(beta_result1[,2])
+```
+
+```{r, warning=FALSE, message=FALSE}
+beta_result2 <- hmflatprobit(niter = 1000,y=y,X=x, scale = 1)
+```
+
+```{r}
+hist(beta_result2[,1])
+```
+```{r}
+hist(beta_result2[,2])
+```
+
+
+
+
+
+
+
 
 
 
