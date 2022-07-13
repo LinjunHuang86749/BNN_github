@@ -1,0 +1,143 @@
+---
+title: "navie_ICNN"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+set.seed(525)
+
+n <- 1000
+input_list <- rnorm(n)
+
+
+```
+
+
+simple ICNN:
+f(x) = 2*x^2  + 10x + 1
+```{r}
+x <- seq(from = -10, to = 10, 0.1)
+
+icnn <- function(x){
+  2*x^2 + 10*x + 1
+}
+
+output <- icnn(x)
+
+plot(x = x, y=output, type = "l")
+```
+
+```{r}
+grad_icnn <- function(x){
+  4*x  + 10
+}
+```
+
+```{r}
+output_list <- grad_icnn(input_list)
+```
+
+```{r}
+hist(input_list)
+```
+
+```{r}
+hist(output_list)
+```
+
+```{r}
+mean(output_list)
+sd(output_list)
+```
+
+simple ICNN:
+f(x) = exp(x) + 2*x^2 + 3*x
+```{r}
+x <- seq(from = -5, to = 5, 0.1)
+
+icnn <- function(x){
+  exp(x) + 2*x^2 + 3
+}
+
+output <- icnn(x)
+
+plot(x = x, y=output, type = "l")
+```
+
+```{r}
+grad_icnn <- function(x){
+  exp(x) + 4*x + 3
+}
+```
+
+
+```{r}
+output_list <- grad_icnn(input_list)
+hist(output_list)
+```
+
+```{r}
+mean(output_list)
+sd(output_list)
+```
+```{r}
+plot(density(output_list))
+```
+
+simple ICNN:
+f(x) = exp(x) +x^4 + 2*x^2 + 3*x 
+```{r}
+x <- seq(from = -5, to = 5, 0.1)
+
+icnn <- function(x){
+  exp(x)  + x^4 + 2*x^2 + 3
+}
+
+output <- icnn(x)
+
+plot(x = x, y=output, type = "l")
+```
+
+```{r}
+grad_icnn <- function(x){
+  exp(x) + 4*x^3 + 4*x + 3
+}
+```
+
+
+```{r}
+output_list <- grad_icnn(input_list)
+hist(output_list)
+```
+
+```{r}
+mean(output_list)
+sd(output_list)
+```
+```{r}
+plot(density(output_list))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

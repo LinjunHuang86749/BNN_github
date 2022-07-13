@@ -1,0 +1,21 @@
+---
+title: "loss_function"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+set up the reference distribution
+```{r}
+n <- 1000
+ref_dist_sample <- rnorm(n)
+
+```
+
+```{r}
+
+```
