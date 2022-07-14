@@ -11,11 +11,33 @@ knitr::opts_chunk$set(echo = TRUE)
 
 set up the reference distribution
 ```{r}
-n <- 1000
+n <- 1e5
 ref_dist_sample <- rnorm(n)
 
 ```
 
 ```{r}
-
+f <- function(x){
+  exp(-1/2*x^2)/sqrt(2*pi)
+}
 ```
+
+```{r}
+x <- 1
+f(x)
+dnorm(x)
+exp(-1/2)/sqrt(2*pi)
+```
+```{r}
+# true value 0.282095
+x <- rnorm(n)
+f_list <- f(x)
+(sample_mean_f <- mean(f_list))
+```
+
+
+
+
+
+
+
