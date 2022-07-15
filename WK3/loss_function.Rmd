@@ -35,6 +35,143 @@ f_list <- f(x)
 (sample_mean_f <- mean(f_list))
 ```
 
+```{r}
+n <- 1e5
+x <- rnorm(n, mean = 5, sd = 3)
+
+(mean(log(dnorm(x, mean = 5, sd = 3))))
+```
+
+```{r}
+n <- 1e5
+z <- rnorm(n)
+
+t_inv <- function(z){
+  (z-5)/3
+}
+
+t_fun <- function(z){
+  3*z + 5
+}
+
+(mean(log(1/3 * dnorm(z) )))
+
+```
+Check
+
+Using posterior
+```{r, warning=FALSE, message=FALSE}
+set.seed(525)
+
+library(tidyverse)
+
+X <- 6
+n <- 1e5
+z <- rnorm(n)
+
+t_fun <- function(z, phi){
+  sqrt(36/13)*z + phi
+}
+
+get_Exp_post <- function(phi_in){
+
+  mean(log( sqrt(13/36) * dnorm(z) ) -
+       log(dnorm(t_fun(z, phi = phi_in),
+                 mean= (4/13)*X + (9/13)*5,
+                 sd = sqrt(36/13))))
+}
+
+
+phi_list <- seq(from = 0, to = 10, by = 0.01)
+
+result_1 <- map_dbl(phi_list, ~get_Exp_post(.x))
+```
+
+```{r}
+plot(x = phi_list, y = result_1, type = "l")
+```
+```{r}
+phi_list[which.min(result_1)]
+```
+Using likelihood and prior
+```{r}
+likelihood_prior <- function(y){
+  1/(sqrt(2*pi)*3)*exp(-1/(2*9)*(y-X)^2)*
+    1/(sqrt(2*pi)*2)*exp(-1/(2*4)*(y-5)^2)
+}
+```
+
+```{r}
+get_Exp_likelihood_prior <- function(phi_in){
+
+  mean(log( sqrt(13/36) * dnorm(z) ) -
+       log( likelihood_prior(t_fun(z, phi = phi_in) ) )
+       )
+}
+```
+
+```{r}
+result_2 <- map_dbl(phi_list, ~get_Exp_likelihood_prior(.x))
+```
+
+```{r}
+plot(x = phi_list, y = result_2, type = "l")
+```
+
+```{r}
+phi_list[which.min(result_2)]
+```
+
+true
+```{r}
+(4/13)*X + (9/13)*5
+```
+
+Find Grad
+```{r}
+get_grad <- function(phi_in){
+
+  mean((1/9)*(t_fun(z,phi = phi_in) - X) +
+         (1/4)*(t_fun(z,phi = phi_in) - 5))
+}
+
+```
+
+```{r}
+get_phi_gd <- function(phi_ini = 0,
+                       step_size = 0.1,
+                       max_step= 100){
+  phi_list <- rep(0, 100)
+  phi_list[1] <- phi_ini
+  
+  for(i in 2:max_step){
+    phi_list[i] <- phi_list[i-1] - step_size*get_grad(phi_list[i-1])
+  }
+  phi_list
+}
+```
+
+```{r}
+phi_list <- get_phi_gd()
+```
+
+
+```{r}
+plot(x = c(1:100), y = phi_list, type= "l")
+```
+```{r}
+phi_list[100]
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
