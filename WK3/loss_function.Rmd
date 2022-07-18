@@ -154,7 +154,7 @@ get_phi_gd <- function(phi_ini = 0,
 ```{r}
 phi_list <- get_phi_gd()
 ```
-
+#ADAM
 
 ```{r}
 plot(x = c(1:100), y = phi_list, type= "l")
@@ -260,7 +260,7 @@ get_grad_2(z, vec1)
 ```
 
 ```{r}
-phi_ini <- matrix(c(1,1), ncol = 1)
+phi_ini <- matrix(c(-1,1), ncol = 1)
 
 phi_temp <- phi_ini
 
