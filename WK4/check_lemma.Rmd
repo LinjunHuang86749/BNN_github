@@ -94,6 +94,44 @@ phi_list[which.min(result_2)]
 ```
 
 
+Min 
+```{r}
+t3_fun <- function(z, phi){
+  phi*z + 5.307692
+}
+```
+
+```{r, warning=FALSE, message=FALSE}
+set.seed(525)
+
+library(tidyverse)
+
+X <- 6
+n <- 1e4
+z <- rnorm(n)
+
+t3_fun <- function(z, phi){
+  phi*z + 5.307692
+}
+
+gwt_KL <- function(z_trans_list, sec_list){
+  mean(KL.divergence(z_trans_list, sec_list, k=10))
+}
+
+posterior_samples <- rnorm(n,
+                           mean = (4/13)*X + (9/13)*5,
+                           sd = sqrt(36/13) )
+
+phi_list <- seq(from = -5, to = 5, by = 0.01)
+
+result_3 <- map_dbl(phi_list, ~gwt_KL( t3_fun(z, .x),
+                                       sec_list = posterior_samples))
+```
+
+
+```{r}
+plot(x = phi_list, y = result_3, type = "l")
+```
 
 
 
