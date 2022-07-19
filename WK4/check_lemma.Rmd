@@ -1,0 +1,116 @@
+---
+title: "check_lemma"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Using KL divergence function
+```{r}
+library(FNN)
+
+set.seed(1000)
+X<- rexp(10000, rate=0.2)
+Y<- rexp(10000, rate=0.4)
+
+KL.divergence(X, Y, k=10)
+mean(KL.divergence(X, Y, k=10))
+#theoretical divergence = log(0.2/0.4)+(0.4-0.2)-1 = 1-log(2) = 0.307
+```
+KL posterior
+```{r, warning=FALSE, message=FALSE}
+set.seed(525)
+
+library(tidyverse)
+
+X <- 6
+n <- 1e4
+z <- rnorm(n)
+
+t_fun <- function(z, phi){
+  sqrt(36/13)*z + phi
+}
+
+gwt_KL <- function(z_trans_list, sec_list){
+  mean(KL.divergence(z_trans_list, sec_list, k=10))
+}
+
+posterior_samples <- rnorm(n,
+                           mean = (4/13)*X + (9/13)*5,
+                           sd = sqrt(36/13) )
+
+phi_list <- seq(from = 0, to = 10, by = 0.1)
+
+result_1 <- map_dbl(phi_list, ~gwt_KL( t_fun(z, .x),
+                                       sec_list = posterior_samples))
+```
+
+```{r}
+plot(x = phi_list, y = result_1, type = "l")
+```
+```{r}
+phi_list[which.min(result_1)]
+```
+
+Using likelihood and prior
+```{r}
+set.seed(525)
+
+X <- 6
+n <- 1e5
+z <- rnorm(n)
+```
+
+```{r}
+likelihood_prior <- function(y){
+  1/(sqrt(2*pi)*3)*exp(-1/(2*9)*(y-X)^2)*
+    1/(sqrt(2*pi)*2)*exp(-1/(2*4)*(y-5)^2)
+}
+```
+
+```{r}
+get_Exp_likelihood_prior <- function(phi_in){
+
+  mean(log( sqrt(13/36) * dnorm(z) ) -
+       log( likelihood_prior(t_fun(z, phi = phi_in) ) )
+       )
+}
+```
+
+```{r}
+result_2 <- map_dbl(phi_list, ~get_Exp_likelihood_prior(.x))
+```
+
+```{r}
+plot(x = phi_list, y = result_2, type = "l")
+```
+
+```{r}
+phi_list[which.min(result_2)]
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
