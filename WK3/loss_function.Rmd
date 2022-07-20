@@ -102,6 +102,14 @@ likelihood_prior <- function(y){
 ```
 
 ```{r}
+likelihood_prior(y=1)
+```
+```{r}
+dnorm(1)
+```
+
+
+```{r}
 get_Exp_likelihood_prior <- function(phi_in){
 
   mean(log( sqrt(13/36) * dnorm(z) ) -

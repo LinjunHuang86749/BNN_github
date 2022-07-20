@@ -133,7 +133,9 @@ result_3 <- map_dbl(phi_list, ~gwt_KL( t3_fun(z, .x),
 plot(x = phi_list, y = result_3, type = "l")
 ```
 
-
+```{r}
+0.13864*0.02074 - 0.05354*0.05354
+```
 
 
 
