@@ -127,6 +127,11 @@ plot(x = phi_list, y = result_2, type = "l")
 ```
 
 ```{r}
+min(result_2)
+```
+
+
+```{r}
 phi_list[which.min(result_2)]
 ```
 ```{r}

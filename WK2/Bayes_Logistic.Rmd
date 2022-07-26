@@ -247,7 +247,7 @@ autoplot(pca_res)
 ```
 
 
-```{r}
+```{r,warning=FALSE, message=FALSE}
 pca <- prcomp(sample_true, scale. = TRUE)
 
 axes <- predict(pca, newdata = sample_true)
@@ -270,10 +270,9 @@ ggplot(data, aes(x=pc1, y=pc2) ) +
 
 
 
-
-
-
-
+```{r}
+curve(dchisq(x, df = 2), add = TRUE, col = "darkorange", lwd = 2)
+```
 
 
 

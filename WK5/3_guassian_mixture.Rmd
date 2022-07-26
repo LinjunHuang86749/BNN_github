@@ -1,0 +1,30 @@
+---
+title: "3_guassian_mixture"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+1-Dim case
+```{r}
+set.seed(525)
+
+n <- 1000
+z1 <- rnorm(n, mean = 0, sd = 1)
+z2 <- rnorm(n, mean = 10, sd = 1)
+z3 <- rnorm(n, mean = 5, sd = 1)
+
+z_mix <- c(z1, z2, z3)
+```
+
+
+```{r}
+hist(z_mix, breaks = 60)
+```
+
+
+
