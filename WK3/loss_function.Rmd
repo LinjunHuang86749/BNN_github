@@ -129,6 +129,9 @@ plot(x = phi_list, y = result_2, type = "l")
 ```{r}
 phi_list[which.min(result_2)]
 ```
+```{r}
+min(result_2)
+```
 
 true
 ```{r}
@@ -287,9 +290,17 @@ sqrt(36/13)
 ```{r}
 get_grad_2(z, matrix(c(1.664101, 5), ncol = 1))
 ```
-
-
-
+```{r}
+(14.3089-4.8817)/2
+```
+```{r}
+(4.8817+4.7136)/3.5
+```
+```{r}
+mean(log( (1/2) * dnorm(z) ) -
+       log( likelihood_prior(z*2 + 5 ) )
+       )
+```
 
 
 
