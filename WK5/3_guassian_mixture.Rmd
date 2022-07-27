@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 set.seed(525)
 
 n <- 1000
-z1 <- rnorm(n, mean = 0, sd = 1)
+z1 <- rnorm(n, mean = 15, sd = 1)
 z2 <- rnorm(n, mean = 10, sd = 1)
 z3 <- rnorm(n, mean = 5, sd = 1)
 
@@ -25,6 +25,19 @@ z_mix <- c(z1, z2, z3)
 ```{r}
 hist(z_mix, breaks = 60)
 ```
+
+```{r}
+std_norm <- rnorm(n = 1000)
+```
+
+
+```{r, warning=FALSE,message=FALSE}
+library(FNN)
+KL.divergence(rnorm(1000, mean = 0, sd = 1),
+              rnorm(1000, mean = 1, sd = 1),
+              k=100) %>% mean()
+```
+
 
 Posterior density function
 ```{r}
@@ -206,7 +219,9 @@ dmvnorm(c(17.9690,-0.5707), mean = c(17.5, 0), sigma = cov_z1)/3 +
 dmvnorm(c(17.9690,-0.5707), mean = c(10, 5), sigma = cov_z1)/3 +
 dmvnorm(c(17.9690,-0.5707), mean = c(20, 10), sigma = cov_z1)/3
 ```
-
+```{r}
+dnorm(x=-0.1062, mean = 10, sd = 1)
+```
 
 ```{r}
 log( sqrt(13/36) * dmvnorm(z) ) %>% head()
@@ -225,7 +240,11 @@ plot(x = phi_list, y = result_1, type = "l")
 ```
 
 
+```{r}
+z<- rnorm(1000)
 
+mean(log(1/1*dnorm(z)) - log(dnorm(z, mean = 10)))
+```
 
 
 
