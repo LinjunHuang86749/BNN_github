@@ -321,8 +321,13 @@ z<- rnorm(1000)
 mean(log(1/1*dnorm(z)) - log(dnorm(z, mean = 10)))
 ```
 
-
-
+ConvexQuadratic Layer
+```{r}
+1*-1.0730+0.9352+-1.5875
+```
+```{r}
+1.6648^2
+```
 
 
 
