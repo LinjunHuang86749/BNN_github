@@ -14,17 +14,25 @@ knitr::opts_chunk$set(echo = TRUE)
 set.seed(525)
 
 n <- 1000
-z1 <- rnorm(n, mean = 15, sd = 1)
-z2 <- rnorm(n, mean = 10, sd = 1)
-z3 <- rnorm(n, mean = 5, sd = 1)
+z1 <- rnorm(n, mean = 0, sd = 1)
+z2 <- rnorm(n, mean = 5, sd = 1)
+z3 <- rnorm(n, mean = 6.5, sd = 1)
 
-z_mix <- c(z1, z2, z3)
+z_mix <- c(z1, z2)
 ```
 
 
 ```{r}
 hist(z_mix, breaks = 60)
 ```
+```{r}
+mean(z_mix)
+```
+
+```{r}
+sd(z_mix)
+```
+
 
 ```{r}
 std_norm <- rnorm(n = 1000)
@@ -328,6 +336,43 @@ ConvexQuadratic Layer
 ```{r}
 1.6648^2
 ```
+
+
+```{r}
+dnorm(0.0375, mean = 1, sd = 1)
+```
+```{r}
+dnorm(11.4323, mean = 1, sd = 1)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
