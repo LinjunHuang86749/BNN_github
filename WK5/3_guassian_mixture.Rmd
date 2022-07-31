@@ -41,6 +41,7 @@ std_norm <- rnorm(n = 1000)
 
 ```{r, warning=FALSE,message=FALSE}
 library(FNN)
+library(tidyverse)
 KL.divergence(rnorm(1000, mean = 0, sd = 1),
               rnorm(1000, mean = 1, sd = 1),
               k=100) %>% mean()
