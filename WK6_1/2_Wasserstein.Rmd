@@ -1,0 +1,57 @@
+---
+title: "2_Wasserstein"
+output: html_document
+date: '2022-08-05'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r, warning=FALSE, message=FALSE}
+library(MASS)
+library(ggfortify)
+library(transport)
+library(MEPDF)
+library(fishmethods)
+library(FNN)
+```
+```{r}
+set.seed(27)
+x <- pp(matrix(runif(500),250,2))
+y <- pp(matrix(runif(500),250,2))
+wasserstein(x,y,p=1)
+wasserstein(x,y,p=2)
+```
+```{r}
+n <- 10000
+x <- rnorm(n, 0, 1)
+y <- rnorm(n, 5, 2)
+
+wasserstein1d(x,y,p=1)
+```
+```{r}
+((mean(x) - mean(y))^2 +(sd(x) - sd(y))^2 + 2*sd(x)*sd(y)*(1 - cor(x, y, method = "pearson")))^0.5
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
