@@ -26,16 +26,95 @@ wasserstein(x,y,p=1)
 wasserstein(x,y,p=2)
 ```
 ```{r}
+# set seed and create data vectors
+
+sample_size <- 1000                                    
+sample_meanvector1 <- c(0, 5)                                   
+sample_covariance_matrix1 <- matrix(c(4, 0, 0, 4),
+                                   ncol = 2)
+  
+# create bivariate normal distribution
+sample_distribution1 <- mvrnorm(n = sample_size,
+                               mu = sample_meanvector1, 
+                               Sigma = sample_covariance_matrix1)
+  
+
+sample_meanvector2 <- c(10, 5)                                   
+sample_covariance_matrix2 <- matrix(c(1, 0, 0, 1),
+                                   ncol = 2)
+  
+# create bivariate normal distribution
+sample_distribution2 <- mvrnorm(n = sample_size,
+                               mu = sample_meanvector2, 
+                               Sigma = sample_covariance_matrix2)
+  
+
+set.seed(27)
+x <- pp(sample_distribution1)
+# x <- pp(matrix(rnorm(1000, mean = 0),500,2))
+y <- pp(sample_distribution2)
+(wasserstein(x,y,p=1))^2
+(wasserstein(x,y,p=2))^2
+```
+```{r}
+set.seed(27)
+x <- pp(matrix(rnorm(500, mean = 0),250,2))
+y <- pp(matrix(rnorm(500, mean= 5),250,2))
+wasserstein(x,y,p=1)
+(wasserstein(x,y,p=2))^2
+```
+
+```{r}
+set.seed(27)
+x <- pp(matrix(rnorm(500, mean = 0),250,2))
+y <- pp(matrix(rnorm(500, mean= 10),250,2))
+(wasserstein(x,y,p=1))^2
+(wasserstein(x,y,p=2))^2
+```
+```{r}
+n = 1000
+x <- pp(matrix(runif(n, min = 0, max = 1),n/2,2))
+y <- pp(matrix(c(rnorm(n/2, mean= 10), rnorm(n/2, mean= 1, sd = 4)),n/2,2))
+(wasserstein(x,y,p=1))^2
+(wasserstein(x,y,p=2))^2
+```
+
+```{r}
+n = 1000
+x <- pp(matrix(runif(n, min = 0, max = 1),n/2,2))
+y <- pp(matrix(c(rnorm(n/2, mean= 10), rnorm(n/2, mean= 5, sd = 4)),n/2,2))
+(wasserstein(x,y,p=1))^2
+(wasserstein(x,y,p=2))^2
+```
+
+```{r}
+n = 1000
+x <- pp(matrix(c(rnorm(n/2, mean= 20), rnorm(n/2, mean= 25, sd = 4)),n/2,2))
+y <- pp(matrix(c(rnorm(n/2, mean= 10), rnorm(n/2, mean= 5, sd = 4)),n/2,2))
+(wasserstein(x,y,p=1))^2
+(wasserstein(x,y,p=2))^2
+(wasserstein(x,y,p=3))^2
+```
+
+```{r}
 n <- 10000
-x <- rnorm(n, 0, 1)
-y <- rnorm(n, 5, 2)
+x1 <- rnorm(n, 0, 1)
+x2 <- rnorm(n, -3, 1)
+y1 <- rnorm(n, 5, 2)
+y2 <- rnorm(n, 10, 2)
+
+x <- rbind(x1,x2)
+y <- rbind(y1,y2)
 
 wasserstein1d(x,y,p=1)
 ```
 ```{r}
-((mean(x) - mean(y))^2 +(sd(x) - sd(y))^2 + 2*sd(x)*sd(y)*(1 - cor(x, y, method = "pearson")))^0.5
+# ((mean(x) - mean(y))^2 +(sd(x) - sd(y))^2 + 2*sd(x)*sd(y)*(1 - cor(x, y, method = "pearson")))^0.5
+((mean(x) - mean(y))^2 +(sd(x) - sd(y))^2 )^0.5
 ```
-
+```{r}
+wasserstein1d(x,y,p=2)
+```
 
 
 
