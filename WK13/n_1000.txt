@@ -1,0 +1,39 @@
+def objective(trial):
+  tudui = TUdui().to(device)
+  tudui.load_state_dict(torch.load("model_pretrained_layer_3_size_32_ini_n_0_2.pth"))
+
+  params = {
+      "num_inner_loop": trial.suggest_int("num_inner_loop", 30, 50),
+      "n": 1000,
+      "A1": trial.suggest_float("A1", 1, 5),
+      "B1": trial.suggest_float("B1", 10, 100, log=True),
+      "A2": trial.suggest_float("A2", 10, 20), 
+      "B2": trial.suggest_float("B2", 1, 10, log=True), 
+      "tudui": tudui
+  }
+
+  score = get_model_loss(params)
+  return score
+
+sampler = optuna.samplers.TPESampler(seed=511)
+study = optuna.create_study(direction="minimize", sampler=sampler)
+study.optimize(objective, n_trials=100, timeout=None, n_jobs = 1)
+
+study.best_params
+
+[I 2022-09-20 01:37:27,900] A new study created in memory with name: no-name-07626381-dc88-4165-ac43-742cce97470b
+[I 2022-09-20 02:48:28,381] Trial 0 finished with value: 0.14504510164260864 and parameters: {'num_inner_loop': 35, 'A1': 4.2387662203926535, 'B1': 17.31050891778216, 'A2': 16.907725939685523, 'B2': 3.664205297352118}. Best is trial 0 with value: 0.14504510164260864.
+[I 2022-09-20 05:16:36,081] Trial 1 finished with value: 0.12859471142292023 and parameters: {'num_inner_loop': 45, 'A1': 1.3615025852079756, 'B1': 21.19208515047644, 'A2': 19.817934834173577, 'B2': 4.2124087905656316}. Best is trial 1 with value: 0.12859471142292023.
+[I 2022-09-20 06:20:55,169] Trial 2 finished with value: 0.6854879856109619 and parameters: {'num_inner_loop': 48, 'A1': 2.682945670809995, 'B1': 40.77182871609309, 'A2': 12.21284882023885, 'B2': 2.5200376630778822}. Best is trial 1 with value: 0.12859471142292023.
+[I 2022-09-20 07:52:32,181] Trial 3 finished with value: 1.0240824222564697 and parameters: {'num_inner_loop': 37, 'A1': 4.955425465978887, 'B1': 10.781288139387106, 'A2': 18.15088949125205, 'B2': 3.9690385899653395}. Best is trial 1 with value: 0.12859471142292023.
+[I 2022-09-20 07:59:35,858] Trial 4 finished with value: 0.9445242285728455 and parameters: {'num_inner_loop': 32, 'A1': 4.349036590019162, 'B1': 10.009387670911716, 'A2': 10.09856246424709, 'B2': 3.2232667593992566}. Best is trial 1 with value: 0.12859471142292023.
+[I 2022-09-20 09:43:21,967] Trial 5 finished with value: 0.1130734384059906 and parameters: {'num_inner_loop': 38, 'A1': 2.7923194609717616, 'B1': 35.634227714185265, 'A2': 16.031717695607504, 'B2': 3.323710308039664}. Best is trial 5 with value: 0.1130734384059906.
+[I 2022-09-20 10:36:19,982] Trial 6 finished with value: 0.17338545620441437 and parameters: {'num_inner_loop': 30, 'A1': 4.4428946156817055, 'B1': 31.389543738343146, 'A2': 10.808893834673226, 'B2': 1.0412300528027918}. Best is trial 5 with value: 0.1130734384059906.
+[I 2022-09-20 11:27:11,267] Trial 7 finished with value: 0.445945143699646 and parameters: {'num_inner_loop': 33, 'A1': 2.3391901107698923, 'B1': 18.67011266728186, 'A2': 15.062194730789933, 'B2': 4.090479362645291}. Best is trial 5 with value: 0.1130734384059906.
+[I 2022-09-20 11:58:00,971] Trial 8 finished with value: 8.77325439453125 and parameters: {'num_inner_loop': 35, 'A1': 4.463569912024292, 'B1': 70.55821139088398, 'A2': 11.95158632954065, 'B2': 1.3234483409257471}. Best is trial 5 with value: 0.1130734384059906.
+[I 2022-09-20 12:42:54,823] Trial 9 finished with value: 0.33336564898490906 and parameters: {'num_inner_loop': 49, 'A1': 3.298391641899083, 'B1': 10.742939540513628, 'A2': 16.304993689897188, 'B2': 1.6109901843835397}. Best is trial 5 with value: 0.1130734384059906.
+[I 2022-09-20 15:49:20,747] Trial 10 finished with value: 0.17531196773052216 and parameters: {'num_inner_loop': 41, 'A1': 1.7574082714195491, 'B1': 74.65312056440081, 'A2': 13.875080150743532, 'B2': 8.42521520142159}. Best is trial 5 with value: 0.1130734384059906.
+[I 2022-09-20 18:55:14,808] Trial 11 finished with value: 0.16558924317359924 and parameters: {'num_inner_loop': 43, 'A1': 1.044867407673013, 'B1': 33.93531432892809, 'A2': 19.281329219865295, 'B2': 6.423509568888044}. Best is trial 5 with value: 0.1130734384059906.
+[I 2022-09-20 19:24:56,062] Trial 12 finished with value: 1.9186207056045532 and parameters: {'num_inner_loop': 44, 'A1': 3.38351740614678, 'B1': 21.137861810929376, 'A2': 19.101753404186162, 'B2': 5.762273084428955}. Best is trial 5 with value: 0.1130734384059906.
+[I 2022-09-20 22:31:47,716] Trial 13 finished with value: 0.22377818822860718 and parameters: {'num_inner_loop': 39, 'A1': 1.0779627676317391, 'B1': 50.68434243348151, 'A2': 17.284027606466612, 'B2': 2.1379171534663524}. Best is trial 5 with value: 0.1130734384059906.
+[I 2022-09-21 00:44:24,117] Trial 14 finished with value: 0.1307203471660614 and parameters: {'num_inner_loop': 45, 'A1': 1.7969221623302885, 'B1': 25.016936142621095, 'A2': 19.954971238812185, 'B2': 5.268198668367899}. Best is trial 5 with value: 0.1130734384059906.
