@@ -1,0 +1,56 @@
+def objective(trial):
+  tudui = TUdui().to(device)
+  tudui.load_state_dict(torch.load("model_pretrained_layer_3_size_32_ini_n_0_2_no_div_size.pth"))
+
+  params = {
+      "num_inner_loop": 2000,
+      "n": 100,
+      "A1": trial.suggest_float("A1", 1, 5),
+      "B1": trial.suggest_float("B1", 2200, 2300),
+      "patience": trial.suggest_categorical("patience", [3, 5, 8]),
+      "patience_len": trial.suggest_categorical("patience_len", [30, 50, 80]),
+      "epoch_patience": trial.suggest_categorical("epoch_patience", [1, 2, 3]),
+      "A2": trial.suggest_float("A2", 160, 180), 
+      "B2": trial.suggest_float("B2", 20, 30), 
+      "C2": 3.5,
+      "tudui": tudui
+  }
+
+  score = get_model_loss(params)
+  return score
+
+sampler = optuna.samplers.TPESampler(seed=511)
+study = optuna.create_study(direction="minimize", sampler=sampler)
+study.optimize(objective, n_trials=100, timeout=None, n_jobs = 1)
+
+study.best_params
+
+[I 2022-10-02 16:15:47,308] A new study created in memory with name: no-name-08a2c118-3a4e-472c-bfad-a12699f951c7
+[I 2022-10-02 16:34:07,403] Trial 0 finished with value: 0.11550973355770111 and parameters: {'A1': 2.0774499057779727, 'B1': 2280.969155509816, 'patience': 5, 'patience_len': 30, 'epoch_patience': 1, 'A2': 168.41472835404997, 'B2': 26.103601910571847}. Best is trial 0 with value: 0.11550973355770111.
+[I 2022-10-02 16:53:58,544] Trial 1 finished with value: 0.12107746303081512 and parameters: {'A1': 1.8851395280955403, 'B1': 2240.1407031553235, 'patience': 5, 'patience_len': 30, 'epoch_patience': 1, 'A2': 170.16592498918536, 'B2': 24.08189378859351}. Best is trial 0 with value: 0.11550973355770111.
+[I 2022-10-02 17:10:21,506] Trial 2 finished with value: 0.17012210190296173 and parameters: {'A1': 2.7923194609717616, 'B1': 2255.1867350951065, 'patience': 3, 'patience_len': 30, 'epoch_patience': 3, 'A2': 165.42293877529775, 'B2': 25.062194730789933}. Best is trial 0 with value: 0.11550973355770111.
+[I 2022-10-02 17:21:30,462] Trial 3 finished with value: 0.11518226563930511 and parameters: {'A1': 3.447096823572297, 'B1': 2226.1227278456686, 'patience': 3, 'patience_len': 50, 'epoch_patience': 2, 'A2': 163.55845958142777, 'B2': 27.54269220463157}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 18:14:55,152] Trial 4 finished with value: 0.15309211611747742 and parameters: {'A1': 4.465184257667074, 'B1': 2249.4724283090804, 'patience': 8, 'patience_len': 50, 'epoch_patience': 3, 'A2': 179.14137343442545, 'B2': 24.948994228971124}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 19:07:50,871] Trial 5 finished with value: 0.13459241390228271 and parameters: {'A1': 2.244849309561988, 'B1': 2227.7201198297266, 'patience': 8, 'patience_len': 30, 'epoch_patience': 3, 'A2': 160.439864377511, 'B2': 28.625164497062283}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 19:35:51,480] Trial 6 finished with value: 0.12704779207706451 and parameters: {'A1': 4.913972358621141, 'B1': 2203.9005231815054, 'patience': 8, 'patience_len': 30, 'epoch_patience': 2, 'A2': 171.634207712164, 'B2': 21.501543380633514}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 19:49:36,925] Trial 7 finished with value: 0.12250683456659317 and parameters: {'A1': 4.628075763200576, 'B1': 2294.761557774049, 'patience': 3, 'patience_len': 50, 'epoch_patience': 3, 'A2': 171.82752356880414, 'B2': 22.752835083379836}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 20:21:11,492] Trial 8 finished with value: 0.15294407308101654 and parameters: {'A1': 2.1397380277462017, 'B1': 2280.6324621109034, 'patience': 8, 'patience_len': 80, 'epoch_patience': 1, 'A2': 165.1223342468897, 'B2': 26.459438734567033}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 20:56:32,375] Trial 9 finished with value: 0.12732988595962524 and parameters: {'A1': 2.386912931845169, 'B1': 2214.8255489571693, 'patience': 8, 'patience_len': 50, 'epoch_patience': 2, 'A2': 170.73165978922424, 'B2': 23.95120195579121}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 21:12:19,521] Trial 10 finished with value: 0.1281488835811615 and parameters: {'A1': 3.614619433578053, 'B1': 2228.965470928081, 'patience': 3, 'patience_len': 80, 'epoch_patience': 2, 'A2': 160.0535019806557, 'B2': 29.779228883974696}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 21:24:20,783] Trial 11 finished with value: 0.12243577837944031 and parameters: {'A1': 3.648347010022898, 'B1': 2266.5691084438727, 'patience': 5, 'patience_len': 50, 'epoch_patience': 1, 'A2': 165.2753956546807, 'B2': 27.33254395180511}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 21:53:47,297] Trial 12 finished with value: 0.13308784365653992 and parameters: {'A1': 1.2747379433274681, 'B1': 2297.4613264049335, 'patience': 5, 'patience_len': 30, 'epoch_patience': 2, 'A2': 166.98300899691677, 'B2': 26.96012998708405}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 22:07:55,967] Trial 13 finished with value: 0.11867587268352509 and parameters: {'A1': 3.127812198124948, 'B1': 2272.1953833693688, 'patience': 5, 'patience_len': 50, 'epoch_patience': 1, 'A2': 175.65952222004992, 'B2': 28.254048239345757}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 22:29:26,051] Trial 14 finished with value: 0.17266453802585602 and parameters: {'A1': 1.159554651287714, 'B1': 2232.0008835883673, 'patience': 3, 'patience_len': 80, 'epoch_patience': 1, 'A2': 162.6246549889069, 'B2': 25.96256788880449}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 22:47:57,519] Trial 15 finished with value: 0.11857627332210541 and parameters: {'A1': 3.9663249461799817, 'B1': 2213.0332398187384, 'patience': 5, 'patience_len': 50, 'epoch_patience': 2, 'A2': 167.87993289522527, 'B2': 20.129461999126484}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 23:01:22,349] Trial 16 finished with value: 0.14263322949409485 and parameters: {'A1': 2.9750876864551126, 'B1': 2255.6430410323874, 'patience': 3, 'patience_len': 30, 'epoch_patience': 2, 'A2': 174.602405951107, 'B2': 28.390895920804436}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 23:07:44,776] Trial 17 finished with value: 0.3955014944076538 and parameters: {'A1': 1.4773077229643092, 'B1': 2276.0053668688574, 'patience': 3, 'patience_len': 30, 'epoch_patience': 1, 'A2': 162.81026392848872, 'B2': 29.493204838037204}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 23:23:29,762] Trial 18 finished with value: 0.1169261634349823 and parameters: {'A1': 2.6477705268898752, 'B1': 2286.2782571826356, 'patience': 5, 'patience_len': 50, 'epoch_patience': 2, 'A2': 168.2015300934082, 'B2': 25.62614484223372}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-02 23:44:45,818] Trial 19 finished with value: 0.13480359315872192 and parameters: {'A1': 1.8008677267031625, 'B1': 2244.264858419742, 'patience': 3, 'patience_len': 80, 'epoch_patience': 1, 'A2': 163.28631166485764, 'B2': 27.666655159176813}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-03 00:00:32,376] Trial 20 finished with value: 0.12218892574310303 and parameters: {'A1': 3.3661973874777162, 'B1': 2262.218962711379, 'patience': 5, 'patience_len': 50, 'epoch_patience': 1, 'A2': 173.57357853449722, 'B2': 23.548818949779854}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-03 00:16:31,935] Trial 21 finished with value: 0.11699667572975159 and parameters: {'A1': 2.6622585115490924, 'B1': 2285.102321043537, 'patience': 5, 'patience_len': 50, 'epoch_patience': 2, 'A2': 168.31149234151349, 'B2': 25.771658544634878}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-03 00:32:34,775] Trial 22 finished with value: 0.11869300156831741 and parameters: {'A1': 2.4912954142835115, 'B1': 2287.937069046923, 'patience': 5, 'patience_len': 50, 'epoch_patience': 2, 'A2': 168.7843090608515, 'B2': 25.406915424168158}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-03 00:51:12,843] Trial 23 finished with value: 0.11775657534599304 and parameters: {'A1': 4.047896838391536, 'B1': 2288.833827568552, 'patience': 5, 'patience_len': 50, 'epoch_patience': 2, 'A2': 166.18082327890187, 'B2': 26.642140010380185}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-03 01:06:45,532] Trial 24 finished with value: 0.11827193200588226 and parameters: {'A1': 3.2711216871060875, 'B1': 2299.76510859317, 'patience': 5, 'patience_len': 50, 'epoch_patience': 2, 'A2': 163.90076833527857, 'B2': 27.714000587052507}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-03 01:28:15,092] Trial 25 finished with value: 0.12423160672187805 and parameters: {'A1': 1.9346340345397093, 'B1': 2266.9840338624535, 'patience': 5, 'patience_len': 30, 'epoch_patience': 2, 'A2': 169.25996297085433, 'B2': 24.599881352277993}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-03 01:43:20,835] Trial 26 finished with value: 0.12048984318971634 and parameters: {'A1': 2.8119437572830424, 'B1': 2215.6655482523865, 'patience': 3, 'patience_len': 50, 'epoch_patience': 2, 'A2': 166.88202138197758, 'B2': 22.99332362284487}. Best is trial 3 with value: 0.11518226563930511.
+[I 2022-10-03 02:03:55,424] Trial 27 finished with value: 0.1225975975394249 and parameters: {'A1': 1.5813393768397013, 'B1': 2238.359298427297, 'patience': 5, 'patience_len': 30, 'epoch_patience': 1, 'A2': 172.86182170165625, 'B2': 26.212431817654743}. Best is trial 3 with value: 0.11518226563930511.
